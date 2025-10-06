@@ -1,5 +1,10 @@
 #include <stdio.h>
 #include <math.h>
+#include "./tinyexpr/tinyexpr.h"
+
+// Compilar:
+// gcc main.c tinyexpr/tinyexpr.c -o main -lm
+
 
 double funcao(double x) {
     return x*x*x - 9.0*x + 3.0;
