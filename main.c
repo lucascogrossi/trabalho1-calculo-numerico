@@ -1,17 +1,26 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
-#include "./tinyexpr/tinyexpr.h"
+#include "tinyexpr/tinyexpr.h"
 
-// Compilar:
-// gcc main.c tinyexpr/tinyexpr.c -o main -lm
-
+char funcao_str[256];
 
 double funcao(double x) {
-    return x*x*x - 9.0*x + 3.0;
+    te_variable vars[] = { {"x", &x} };
+    int err;
+    te_expr *expr = te_compile(funcao_str, vars, 1, &err);
+    if (!expr) {
+        printf("Erro na expressão, posição do erro: %d\n", err);
+        return 0;
+    }
+    double val = te_eval(expr);
+    te_free(expr);
+    return val;
 }
 
 double derivada(double x) {
-    return 3.0*x*x - 9.0;
+    double h = 1e-8;
+    return (funcao(x + h) - funcao(x - h)) / (2*h);
 }
 
 double funcao_phi(double x) {
@@ -27,17 +36,17 @@ void bisseccao(double a, double b, double tol, int max_iter, FILE *fp) {
 
     while (fabs(b - a) > tol && k < max_iter) {
         k++;
-        double finicio = funcao(a);
+        double fa = funcao(a);
+        double fb = funcao(b);
         meio = (a + b) / 2.0;
         double fmeio = funcao(meio);
 
         fprintf(fp, "%d\t%lf\t%lf\t%lf\t%lf\n", k, a, b, meio, fmeio);
 
-        if (finicio * fmeio < 0) {
-            b = meio;
-        } else {
-            a = meio;
-        }
+        if (fa * fmeio < 0)
+		   	b = meio;
+        else
+		   	a = meio;
     }
 
     fprintf(fp, "k = %d\nRaiz = %lf\n\n", k, meio);
@@ -143,6 +152,9 @@ void regula_falsi(double a, double b, double tol, int max_iter, FILE *fp) {
     fprintf(fp, "Método Regula Falsi (Falsa Posição)\n");
     fprintf(fp, "Iter\t    a\t\t    b\t\t    c\t\t   f(c)\n");
 
+    int iter = 0;
+    double c;
+
     double fa = funcao(a);
     double fb = funcao(b);
 
@@ -151,16 +163,13 @@ void regula_falsi(double a, double b, double tol, int max_iter, FILE *fp) {
         return;
     }
 
-    int iter = 0;
-    double c, fc;
-
     while (iter < max_iter) {
         c = b - fb * (b - a) / (fb - fa);
-        fc = funcao(c);
+        double fc = funcao(c);
 
         fprintf(fp, "%d\t%lf\t%lf\t%lf\t%lf\n", iter + 1, a, b, c, fc);
 
-        if (fabs(fc) < tol) {
+        if (fabs(fc) < 1e-8) {
             fprintf(fp, "Raiz = %lf\n\n", c);
             return;
         }
@@ -182,23 +191,25 @@ void regula_falsi(double a, double b, double tol, int max_iter, FILE *fp) {
 int main() {
     FILE *fp = fopen("resultados.txt", "w");
     if (!fp) {
-        printf("Erro ao criar arquivo.\n");
+        printf("Erro ao criar arquivo resultados.txt\n");
         return 1;
     }
 
-    // Bissecção
+    // Lê a função do arquivo funcao.txt
+    FILE *finput = fopen("funcao.txt", "r");
+    if (!finput) {
+        printf("Erro ao abrir funcao.txt\n");
+        return 1;
+    }
+    fgets(funcao_str, sizeof(funcao_str), finput);
+    fclose(finput);
+
+    printf("Função lida: %s\n", funcao_str);
+
     bisseccao(0.0, 1.0, 1e-5, 50, fp);
-
-    // Iterativo Linear
     iterativo_linear(0.5, 0.0005, 50, fp);
-
-    // Newton-Raphson
     newton_raphson(0.5, 1e-5, 50, fp);
-
-    // Secante
     secante(0.0, 1.0, 0.0001, 50, fp);
-
-    // Regula Falsi
     regula_falsi(0.0, 1.0, 0.0001, 50, fp);
 
     fclose(fp);
@@ -206,3 +217,4 @@ int main() {
 
     return 0;
 }
+
