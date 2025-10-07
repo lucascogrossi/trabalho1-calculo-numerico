@@ -1,16 +1,31 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include "tinyexpr/tinyexpr.h"
 
 char funcao_str[256];
+char phi_str[256];
 
 double funcao(double x) {
     te_variable vars[] = { {"x", &x} };
     int err;
     te_expr *expr = te_compile(funcao_str, vars, 1, &err);
     if (!expr) {
-        printf("Erro na expressão, posição do erro: %d\n", err);
+        printf("Erro na expressão f(x), posição: %d\n", err);
+        return 0;
+    }
+    double val = te_eval(expr);
+    te_free(expr);
+    return val;
+}
+
+double funcao_phi(double x) {
+    te_variable vars[] = { {"x", &x} };
+    int err;
+    te_expr *expr = te_compile(phi_str, vars, 1, &err);
+    if (!expr) {
+        printf("Erro na expressão φ(x), posição: %d\n", err);
         return 0;
     }
     double val = te_eval(expr);
@@ -21,10 +36,6 @@ double funcao(double x) {
 double derivada(double x) {
     double h = 1e-8;
     return (funcao(x + h) - funcao(x - h)) / (2*h);
-}
-
-double funcao_phi(double x) {
-    return ((x*x*x)/9.0) + (1.0/3.0);
 }
 
 void bisseccao(double a, double b, double tol, int max_iter, FILE *fp) {
@@ -195,17 +206,27 @@ int main() {
         return 1;
     }
 
-    // Lê a função do arquivo funcao.txt
     FILE *finput = fopen("funcao.txt", "r");
     if (!finput) {
         printf("Erro ao abrir funcao.txt\n");
         return 1;
     }
+
     fgets(funcao_str, sizeof(funcao_str), finput);
+    if (fgets(phi_str, sizeof(phi_str), finput) == NULL) {
+        printf("φ(x) não encontrado em 'funcao.txt'\n");
+        return 1;
+    }
     fclose(finput);
 
-    printf("Função lida: %s\n", funcao_str);
+    // Remover quebras de linha
+    funcao_str[strcspn(funcao_str, "\n")] = 0;
+    phi_str[strcspn(phi_str, "\n")] = 0;
 
+    printf("Função f(x): %s\n", funcao_str);
+    printf("Função φ(x): %s\n", phi_str);
+	
+	// TODO: comentar os parametros
     bisseccao(0.0, 1.0, 1e-5, 50, fp);
     iterativo_linear(0.5, 0.0005, 50, fp);
     newton_raphson(0.5, 1e-5, 50, fp);
@@ -217,4 +238,3 @@ int main() {
 
     return 0;
 }
-
