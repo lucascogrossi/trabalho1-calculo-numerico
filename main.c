@@ -226,11 +226,19 @@ int main() {
     printf("Função f(x): %s\n", funcao_str);
     printf("Função φ(x): %s\n", phi_str);
 	
-	// TODO: comentar os parametros
+    // Bissecção: intervalo inicial (a, b), tolerância, máximo de iterações
     bisseccao(0.0, 1.0, 1e-5, 50, fp);
+
+    // Iterativo Linear (Ponto Fixo): chute inicial, tolerância, máximo de iterações
     iterativo_linear(0.5, 0.0005, 50, fp);
+
+    // Newton-Raphson: chute inicial, tolerância, máximo de iterações
     newton_raphson(0.5, 1e-5, 50, fp);
+
+    // Secante: chutes iniciais, tolerância, máximo de iterações
     secante(0.0, 1.0, 0.0001, 50, fp);
+
+    // Regula Falsi: intervalo inicial, tolerância, máximo de iterações
     regula_falsi(0.0, 1.0, 0.0001, 50, fp);
 
     fclose(fp);
