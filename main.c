@@ -98,7 +98,7 @@ void newton_raphson(double x0, double tol, int max_iter, FILE *fp) {
         dfx0 = derivada(x0);
 
         if (fabs(fx0) < tol) {
-            fprintf(fp, "Raiz aproximada encontrada: %lf\n", x0);
+            fprintf(fp, "Raiz aproximada encontrada: %lf\n\n", x0);
             return;
         }
 
