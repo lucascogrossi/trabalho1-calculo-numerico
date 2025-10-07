@@ -206,9 +206,9 @@ int main() {
         return 1;
     }
 
-    FILE *finput = fopen("funcao.txt", "r");
+    FILE *finput = fopen("entrada.txt", "r");
     if (!finput) {
-        printf("Erro ao abrir funcao.txt\n");
+        printf("Erro ao abrir entrada.txt\n");
         return 1;
     }
 
